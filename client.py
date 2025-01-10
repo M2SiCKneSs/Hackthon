@@ -1,17 +1,17 @@
-from socket import *
-serverIP = '132.73.193.241'
-serverPort = 12000
+import socket
 
+# Client setup
+SERVER_IP = '10.100.102.13'  # Replace with the server's IP address
+SERVER_PORT = 12345      # Port to connect to (must match server)
 
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((SERVER_IP, SERVER_PORT))
 
-def send_data_tcp(serverIP,serverPort):
-    clientSocket = socket(AF_INET, SOCK_STREAM)
-    clientSocket.connect((serverIP, serverPort))
-    sentence = input('Input lowercase sentence: ')
-    clientSocket.send(sentence.encode())
+# Send and receive data
+message = input("Enter message to send to the server: ")
+client_socket.sendall(message.encode('utf-8'))
 
-    modifiedSentence = clientSocket.recv(1024).decode() #reads up to 1024 byts of data
-    print('From Server:', modifiedSentence)
+response = client_socket.recv(1024).decode('utf-8')
+print(f"Response from server: {response}")
 
-    clientSocket.close()
-send_data_tcp(serverIP,serverPort)
+client_socket.close()
