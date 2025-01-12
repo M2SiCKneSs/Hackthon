@@ -37,7 +37,7 @@ def send_offer():
 def handle_single_udp_request(message, clientAddress):
     """Handle a single UDP request."""
     try:
-        # Parse the requesta
+        # Parse the request
         if len(message) != 13:  # Expected size for '!IBQ'
             #print(f"Ignoring invalid message from {clientAddress}. Received {len(message)} bytes.")
             return
