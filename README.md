@@ -71,7 +71,7 @@ UDP client ('192.168.1.20', 54322) requested 1024 bytes.
 Completed UDP transfer to ('192.168.1.20', 54322)
 
 ### Client Console Output:
-Received offer from 192.168.1.24
+Received offer from 192.168.1.24 
 
 Enter file size to request (in bytes): 10240
 
