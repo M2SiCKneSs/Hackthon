@@ -1,5 +1,12 @@
-import socket
+from socket import *
+import struct
 import time
+import threading
+
+# Configuration
+magic_cookie = 0xabcddcba
+serverUDPPort = 12000
+broadcast_timeout = 10  # Time to listen for broadcast (in seconds)
 
 
 def receive_broadcast():
@@ -8,6 +15,8 @@ def receive_broadcast():
     clientSocket.setsockopt(SOL_SOCKET, SO_BROADCAST, 1)
     clientSocket.bind(('', serverUDPPort))
     clientSocket.settimeout(broadcast_timeout)
+
+    print(f"Listening for server broadcast on UDP port {serverUDPPort}...")
     try:
         message, serverAddress = clientSocket.recvfrom(2048)
         header = struct.unpack('!IBHH', message)
@@ -19,6 +28,9 @@ def receive_broadcast():
     finally:
         clientSocket.close()
     return None, None, None
+
+
+
 def tcp_transfer(serverIP, tcpPort, file_size, connection_number, num_connections, results):
     """Run a single TCP transfer."""
     clientSocket = socket(AF_INET, SOCK_STREAM)
@@ -34,7 +46,6 @@ def tcp_transfer(serverIP, tcpPort, file_size, connection_number, num_connection
 
         # Receive data
         received_bytes = 0
-        print("Received offer ", serverIP)
         while received_bytes < segment_file_size:
             chunk = clientSocket.recv(1024)
             if not chunk:
@@ -48,39 +59,50 @@ def tcp_transfer(serverIP, tcpPort, file_size, connection_number, num_connection
         results.append((f"TCP transfer #{connection_number}", elapsed_time, speed))
     finally:
         clientSocket.close()
+def udp_transfer(serverIP, udpPort, file_size, connection_number, num_connections, results):
+    """Run a single UDP transfer."""
+    clientSocket = socket(AF_INET, SOCK_DGRAM)
+    clientSocket.settimeout(15)
 
-def tcp_client(server_ip, server_port, file_size):
     try:
-        # Create the client socket
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((server_ip, server_port))
-        print(f"Connected to server at {server_ip}:{server_port}")
-
-        # Send the file size to the server
-        client_socket.send(f"{file_size}\n".encode('utf-8'))
-        print(f"Requested file size: {file_size} bytes")
-
-        # Start receiving data
+        # Split the file size for each UDP connection
+        segment_file_size = file_size // num_connections
         start_time = time.time()
-        bytes_received = 0
 
-        while bytes_received < file_size:
-            data = client_socket.recv(1024)  # Receive 1 KB at a time
-            if not data:
+        # Send request
+        request_message = struct.pack('!IBQ', magic_cookie, 0x3, segment_file_size)
+        clientSocket.sendto(request_message, (serverIP, udpPort))
+
+        # Receive data
+        received_segments = 0
+        total_segments = None
+        while True:
+            try:
+                packet, _ = clientSocket.recvfrom(2048)
+
+                if len(packet) < 21:
+                    continue
+
+                header = struct.unpack('!IBQQ', packet[:21])
+                if header[0] != magic_cookie or header[1] != 0x4:
+                    continue
+
+                total_segments = header[2]
+                received_segments += 1
+
+                if received_segments == total_segments:
+                    break
+            except timeout:
                 break
-            bytes_received += len(data)
 
-        # Calculate transfer stats
+        # Calculate transfer summary
         end_time = time.time()
-        duration = end_time - start_time
-        transfer_rate = bytes_received / duration / (1024 * 1024)  # Convert to MB/s
-
-        print(f"Received {bytes_received} bytes in {duration:.2f} seconds ({transfer_rate:.2f} MB/s).")
-    except Exception as e:
-        print(f"Error in client: {e}")
+        elapsed_time = end_time - start_time
+        speed = (segment_file_size * 8) / elapsed_time  # Speed in bits per second
+        packet_success_rate = (received_segments / total_segments) * 100 if total_segments else 0
+        results.append((f"UDP transfer #{connection_number}", elapsed_time, speed, packet_success_rate))
     finally:
-        # Ensure the socket is closed
-        client_socket.close()
+        clientSocket.close()
 
 def main():
     # Step 1: Receive broadcast
@@ -92,10 +114,8 @@ def main():
     # Step 2: Enter test parameters
     file_size = int(input("Enter file size to request (in bytes): ").strip())
     num_tcp_connections = int(input("Enter number of TCP connections: ").strip())
-
-
     num_udp_connections = int(input("Enter number of UDP connections: ").strip())
-    print(f"Listening for server broadcast on UDP port {serverUDPPort}...")
+
     # Step 3: Run tests using threads
     threads = []
     results = []
@@ -125,9 +145,5 @@ def main():
 
     print("\nAll transfers complete, listening to offer requests")
 
-
-if __name__ == '__main__':
-    server_ip = '10.100.102.13'  # Replace with the server's IP address
-    server_port = 12345  # Port to connect to (must match server)
-    file_size = 10 * 1024 * 1024   # Example: 10 MB
-    tcp_client(server_ip, server_port, file_size)
+if name == "__main__":
+    main()
