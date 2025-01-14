@@ -73,7 +73,17 @@ This project implements a multithreaded client-server application that supports 
 * **Error Handling**: Comprehensive error logging for debugging and troubleshooting.
 * **Performance Testing**: Compare TCP and UDP speeds for file transfers.
 * **Statistics File**: Logs detailed statistics of every transfer for future analysis.
-
+  
+## How to use:
+* Download and save the files in the same directory
+* Open server.py and client.py
+* Run server.py and client.py (order can be changed of course)
+* Enter the requiared data in the terminal
+* Press enter
+* If an error occured, you could see it in the log file created in the same directory and re-run the .py if needed
+* If everything ran smoothly , you should have a new .csv file in your directory with statistics (elaborated from what is shown in the terminal)
+* Each succesful run is written into the .csv
+* There is no GUI (didn't have time unfortunatly :( , so in any case , re-run the .py files and hopefully it will work :) )
 
 ## Example Usage
 ### Server Console Output:
