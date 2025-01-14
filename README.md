@@ -34,6 +34,8 @@ This project implements a multithreaded client-server application that supports 
 
 |-- README.md        # Project documentation
 
+|-- statistics_handler.py # A utility for handling statistics
+
 |-- logs/            # Directory for CSV logs (auto-created by the ErrorHandler)
 `
 ## Requirements
@@ -51,12 +53,27 @@ This project implements a multithreaded client-server application that supports 
 * Error message
 * Exception details (if any)
 
+
+## Transfer Statistics
+* Transfer statistics are recorded in a separate CSV file (`logs/statistics.csv`) created by the `StatisticsHandler`.
+* Each entry includes:
+  * Timestamp
+  * Protocol (TCP or UDP)
+  * Connection ID
+  * File size (bytes)
+  * Elapsed time (seconds)
+  * Transfer speed (bits per second)
+  * Success rate (%) for UDP transfers
+  * Number of lost packets (for UDP transfers)
+
 ## Key Features and Highlights
-* Multithreaded Design: Enables the server to handle multiple clients concurrently.
-* Dynamic UDP Discovery: Clients dynamically discover the server using UDP broadcasts.
-* Chunked Data Transmission: Ensures reliable data transfer in both TCP and UDP modes.
-* Error Handling: Comprehensive error logging for debugging and troubleshooting.
-* Performance Testing: Compare TCP and UDP speeds for file transfers.
+* **Multithreaded Design**: Enables the server to handle multiple clients concurrently.
+* **Dynamic UDP Discovery**: Clients dynamically discover the server using UDP broadcasts.
+* **Chunked Data Transmission**: Ensures reliable data transfer in both TCP and UDP modes.
+* **Error Handling**: Comprehensive error logging for debugging and troubleshooting.
+* **Performance Testing**: Compare TCP and UDP speeds for file transfers.
+* **Statistics File**: Logs detailed statistics of every transfer for future analysis.
+
 
 ## Example Usage
 ### Server Console Output:
