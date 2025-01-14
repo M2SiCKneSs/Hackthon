@@ -27,7 +27,7 @@ try:
     tcpSocket.bind((serverIP, serverTCPPort))
     tcpSocket.listen(5)
 
-    print(f"\n{GREEN}Server started, listening on IP address {serverIP}{GREEN}")
+    print(f"{GREEN}Server started, listening on IP address {serverIP}{GREEN}")
 except Exception as e:
     error_handler.handle_error(f"{RED}Error initializing server sockets{RED}", e)
     exit(1)
